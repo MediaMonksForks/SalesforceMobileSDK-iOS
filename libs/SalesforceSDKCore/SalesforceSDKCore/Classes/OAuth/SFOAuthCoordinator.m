@@ -307,11 +307,6 @@
     self.advancedAuthState = SFOAuthAdvancedAuthStateNotStarted;
     if ([self.delegate respondsToSelector:@selector(oauthCoordinatorDidAuthenticate:authInfo:)]) {
         [self.delegate oauthCoordinatorDidAuthenticate:self authInfo:authInfo];
-    } else if ([self.delegate respondsToSelector:@selector(oauthCoordinatorDidAuthenticate:)]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        [self.delegate oauthCoordinatorDidAuthenticate:self];
-#pragma clang diagnostic pop
     }
     self.authInfo = nil;
 }
@@ -388,21 +383,18 @@
 }
 
 - (void)beginUserAgentFlow {
-    
     if (![NSThread isMainThread]) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [self beginUserAgentFlow];
         });
         return;
     }
-    
     self.initialRequestLoaded = NO;
     
     // notify delegate will be begin authentication in our (web) vew
     if ([self.delegate respondsToSelector:@selector(oauthCoordinator:willBeginAuthenticationWithView:)]) {
         [self.delegate oauthCoordinator:self willBeginAuthenticationWithView:self.view];
     }
-    
     NSString *approvalUrlString = [self generateApprovalUrlString];
     [self loadWebViewWithUrlString:approvalUrlString cookie:YES];
 }
@@ -459,9 +451,7 @@
     NSString *url = [[NSString alloc] initWithFormat:@"%@://%@%@", self.credentials.protocol,
                      self.credentials.domain,
                      kSFOAuthEndPointToken];
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url] cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                                       timeoutInterval:self.timeout];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url] cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:self.timeout];
     NSString *grantType = @"urn:ietf:params:oauth:grant-type:jwt-bearer";
     NSString *bodyStr = [[@"grant_type=" stringByAppendingString:[grantType stringByURLEncoding]] stringByAppendingString:[NSString stringWithFormat:@"&assertion=%@", self.credentials.jwt]];
     NSData *body = [bodyStr dataUsingEncoding:NSUTF8StringEncoding];
@@ -660,7 +650,7 @@
                                           kSFOAuthDisplay, kSFOAuthDisplayTouch,
                                           kSFOAuthDeviceId,[[[UIDevice currentDevice] identifierForVendor] UUIDString]];
     
-    [approvalUrlString appendFormat:@"&%@=%@", kSFOAuthResponseType, kSFOAuthResponseTypeToken];
+    [approvalUrlString appendFormat:@"&%@=%@", kSFOAuthResponseType, kSFOAuthResponseTypeHybridToken];
     NSString *scopeString = [self scopeQueryParamString];
     if (scopeString != nil) {
         [approvalUrlString appendString:scopeString];
@@ -695,8 +685,6 @@
     NSString *scopeStr = [[[scopes allObjects] componentsJoinedByString:@" "] stringByURLEncoding];
     return [NSString stringWithFormat:@"&%@=%@", kSFOAuthScope, scopeStr];
 }
-
-
 
 + (NSString *)advancedAuthStateDesc:(SFOAuthAdvancedAuthState)authState
 {

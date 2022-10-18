@@ -29,6 +29,9 @@ static NSString * const kKeyStoreKeyDataArchiveKey = @"com.salesforce.keystore.k
 
 @implementation SFKeyStoreKey
 
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 + (instancetype) createKey
 {
     SFEncryptionKey *encKey = [SFEncryptionKey createKey];
@@ -44,6 +47,7 @@ static NSString * const kKeyStoreKeyDataArchiveKey = @"com.salesforce.keystore.k
     }
     return self;
 }
+#pragma clang diagnostic pop
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {

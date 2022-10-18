@@ -98,6 +98,14 @@
     [super testConvertSmartSqlWithSelfJoin];
 }
 
+- (void) testConvertSmartSqlWithSelfJoinAndJsonExtractedField {
+    // Doesn't apply to external storage case
+}
+
+- (void) testConvertSmartSqlWithSelfJoinAndJsonExtractedFieldNoLeadingSpaces {
+    // Doesn't apply to external storage case
+}
+
 - (void) testConvertSmartSqlWithSpecialColumns
 {
     NSString *expected = [NSString stringWithFormat:
@@ -177,6 +185,26 @@
     
 - (void) testSmartQueryReturningNonIndexedField
 {
+    // Doesn't apply to external storage case
+}
+
+- (void) testConvertSmartSqlWithQuotedCurlyBraces {
+    // Doesn't apply to external storage case
+}
+
+- (void) testConvertSmartSqlWithMultipleQuotedCurlyBraces {
+    // Doesn't apply to external storage case
+}
+
+- (void) testConvertSmartSqlWithQuotedUnbalancedCurlyBrace {
+    // Doesn't apply to external storage case
+}
+
+- (void) testSmartQueryUsingWhereArgs {
+    // Doesn't apply to external storage case - test uses non-indexed field
+}
+
+- (void) testCleanupRegexpFaster {
     // Doesn't apply to external storage case
 }
 

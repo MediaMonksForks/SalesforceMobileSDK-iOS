@@ -23,6 +23,7 @@
  */
 
 #import "SFSmartStoreTests.h"
+#import <SalesforceSDKCommon/SalesforceSDKCommon-Swift.h>
 #import <SalesforceSDKCommon/SFJsonUtils.h>
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
@@ -33,6 +34,7 @@
 #import "SFSmartStore+Internal.h"
 #import "SFSoupIndex.h"
 #import "SFSmartStoreUpgrade.h"
+#import <SalesforceSDKCore/SalesforceSDKCore-Swift.h>
 #import <SalesforceSDKCore/SFKeyStoreManager.h>
 #import <SalesforceSDKCore/SFEncryptionKey.h>
 #import <SalesforceSDKCore/NSString+SFAdditions.h>
@@ -86,7 +88,6 @@
     XCTAssertTrue([options containsObject:@"ENABLE_FTS4"]);
     XCTAssertTrue([options containsObject:@"ENABLE_FTS3_PARENTHESIS"]);
     XCTAssertTrue([options containsObject:@"ENABLE_FTS5"]);
-    XCTAssertTrue([options containsObject:@"ENABLE_JSON1"]);
 }
 
 /**
@@ -108,13 +109,13 @@
 - (void) testSqliteVersion
 {
     NSString* version = [NSString stringWithUTF8String:sqlite3_libversion()];
-    XCTAssertEqualObjects(version, @"3.33.0");
+    XCTAssertEqualObjects(version, @"3.39.2");
 }
 
 - (void) testSqlCipherVersion
 {
     NSString* version = [self.store getSQLCipherVersion];
-    XCTAssertEqualObjects(version, @"4.4.2 community");
+    XCTAssertEqualObjects(version, @"4.5.2 community");
 }
 
 /**
@@ -951,8 +952,9 @@
 }
 
 - (void)testSmartStoreIsRecreatedWhenKeyIsLost {
-    NSString* storeName = @"testSmartStoreIsRecreatedWhenKeyIsLost";
-    SFEncryptionKey *originalKey = [[SFKeyStoreManager sharedInstance] retrieveKeyWithLabel:kSFSmartStoreEncryptionKeyLabel autoCreate:YES];
+    NSString *storeName = @"testSmartStoreIsRecreatedWhenKeyIsLost";
+    NSString *keyLabel = [NSString stringWithFormat:@"com.salesforce.keystore.%@", kSFSmartStoreEncryptionKeyLabel];
+    NSData *originalKey = [SFSDKKeychainHelper readWithService:keyLabel account:nil].data;
 
     @try {
         // Create store
@@ -980,7 +982,7 @@
         [SFSmartStore clearSharedStoreMemoryState];
         
         // Drop key
-        [[SFKeyStoreManager sharedInstance] removeKeyWithLabel:kSFSmartStoreEncryptionKeyLabel];
+        [SFSDKKeyGenerator removeEncryptionKeyFor:kSFSmartStoreEncryptionKeyLabel];
         
         // Re-open store -- but expect new empty store since key has changed
         store = [SFSmartStore sharedStoreWithName:storeName];
@@ -992,7 +994,7 @@
         // Drop store
         [SFSmartStore removeSharedStoreWithName:storeName];
         // Restore key
-        [[SFKeyStoreManager sharedInstance] storeKey:originalKey withLabel:kSFSmartStoreEncryptionKeyLabel];
+        XCTAssertTrue([SFSDKKeychainHelper writeWithService:keyLabel data:originalKey account:nil].success);
     }
 }
 
